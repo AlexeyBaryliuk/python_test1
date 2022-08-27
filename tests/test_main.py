@@ -44,6 +44,15 @@ def func_div_by_zero():
     return 2 / 0
 
 
+@LogFile(LOG_FILE_3)
+def func_match_3_10_feature(data) -> int:
+    match data:
+        case 0:
+            return 2 ** data
+        case 1:
+            return 2 ** data
+
+
 @mocked_open
 def test_logfile(**kwargs):
     iter_number = 10
@@ -84,21 +93,11 @@ def test_logfile_div_by_zero(**kwargs):
     assert lines_number == iter_number
 
 
-@LogFile(LOG_FILE_3)
-def func_d2(data):
-    match data:
-        case 0:
-            print(0)
-        case 1:
-            print(1)
-
-
 @mocked_open
-def test_logfile_d2_by_zero(**kwargs):
-    iter_number = 3
+def test_logfile_match_3_10_feature(**kwargs):
+    iter_number = 2
     for i in range(iter_number):
-        # with pytest.raises(ZeroDivisionError):
-            func_d2(i)
+        assert func_match_3_10_feature(i) == 2 ** i
     # Check log file
     mocked_file = kwargs['mocked_file']
     mocked_file.seek(0)
@@ -109,6 +108,5 @@ def test_logfile_d2_by_zero(**kwargs):
     for line in mocked_file.readlines():
         match = prog.match(line)
         assert bool(match) is True
-        assert match.groups()[-1] == 'division by zero'
         lines_number += 1
-    # assert lines_number == iter_number
+    assert lines_number == iter_number
