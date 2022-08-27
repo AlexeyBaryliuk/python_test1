@@ -5,9 +5,9 @@ from functools import wraps
 from ..main import LogFile
 from unittest.mock import patch
 
-
 LOG_FILE_1 = 'text_log.txt'
 LOG_FILE_2 = 'text_log2.txt'
+LOG_FILE_3 = 'text_log3.txt'
 
 
 class MockedFile(io.StringIO):
@@ -30,6 +30,7 @@ def mocked_open(fn):
             open_mock.return_value = mocked_file
             kwargs['mocked_file'] = mocked_file
             return fn(*args, **kwargs)
+
     return wrapper
 
 
@@ -41,6 +42,12 @@ def func1(a: int) -> int:
 @LogFile(LOG_FILE_2)
 def func_div_by_zero():
     return 2 / 0
+
+
+@LogFile(LOG_FILE_3)
+def func_d2(data):
+    if data in range(0 | 1 | 3):
+        return 2 / 0
 
 
 @mocked_open
@@ -81,3 +88,24 @@ def test_logfile_div_by_zero(**kwargs):
         assert match.groups()[-1] == 'division by zero'
         lines_number += 1
     assert lines_number == iter_number
+
+
+@mocked_open
+def test_logfile_d2_by_zero(**kwargs):
+    iter_number = 3
+    for i in range(iter_number):
+        with pytest.raises(ZeroDivisionError):
+            func_d2(i)
+    # Check log file
+    mocked_file = kwargs['mocked_file']
+    mocked_file.seek(0)
+    pattern = (r"Start:\s+([0-9-\s:.]+)\|\s+Run:\s+([0-9:.]+)"
+               r"\s+\|\s+An error occurred:\s+([\w ]+)")
+    prog = re.compile(pattern)
+    lines_number = 0
+    for line in mocked_file.readlines():
+        match = prog.match(line)
+        assert bool(match) is True
+        assert match.groups()[-1] == 'division by zero'
+        lines_number += 1
+    # assert lines_number == iter_number
