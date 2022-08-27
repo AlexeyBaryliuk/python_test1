@@ -44,12 +44,6 @@ def func_div_by_zero():
     return 2 / 0
 
 
-@LogFile(LOG_FILE_3)
-def func_d2(data):
-    if data in range(0 | 1 | 3):
-        return 2 / 0
-
-
 @mocked_open
 def test_logfile(**kwargs):
     iter_number = 10
@@ -90,11 +84,20 @@ def test_logfile_div_by_zero(**kwargs):
     assert lines_number == iter_number
 
 
+@LogFile(LOG_FILE_3)
+def func_d2(data):
+    match data:
+        case 0:
+            print(0)
+        case 1:
+            print(1)
+
+
 @mocked_open
 def test_logfile_d2_by_zero(**kwargs):
     iter_number = 3
     for i in range(iter_number):
-        with pytest.raises(ZeroDivisionError):
+        # with pytest.raises(ZeroDivisionError):
             func_d2(i)
     # Check log file
     mocked_file = kwargs['mocked_file']
